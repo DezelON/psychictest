@@ -1,0 +1,1 @@
+max_time_psy_wait = 5

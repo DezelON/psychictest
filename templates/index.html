@@ -1,0 +1,11 @@
+{% load static %}
+{% include "header.html" %}
+
+    <div class="center">
+        <div class="slogan">Примите участие в тестировании экстрасенсов!</div>
+        <a href="/game">
+            <div class="button" style="display: table; margin: auto;">{% if continue %}Продолжить участие!{% else %}Принять участие!{% endif %}</div> <!-- Никаких button'ов -->
+        </a>
+    </div>
+
+{% include "footer.html" %} 

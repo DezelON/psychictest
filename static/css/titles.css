@@ -1,0 +1,46 @@
+ul.tiles {
+    font: 14px Verdana, Geneva, sans-serif;
+    text-align: center;
+    display: -webkit-box;
+    -webkit-box-pack: justify;
+    display: -webkit-flex;
+    -webkit-justify-content: space-between;
+    display: flex;
+    justify-content: space-between;
+    text-align: justify;
+    text-align-last: justify;
+    margin: 0;
+    padding: 0;
+}
+
+ul.tiles li {
+    display: inline-block;
+    width: auto;
+    margin: 0 5px 5px;
+    vertical-align: top;
+    text-align: center;
+    display: -webkit-box;
+}
+
+.tile {
+    padding: 7px;
+    background-color: rgb(0, 0, 0, 0.3);
+    display: inline-flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: center;
+    width: auto;
+    transition-property: background-color, transform, box-shadow;
+    transition-duration: .3s;
+}
+
+.tile-border {
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.tile > img {
+    width: 90px;
+    height: 90px;
+    margin: auto;
+    display: block;
+}

@@ -1,0 +1,30 @@
+{% load static %}
+{% include "header.html" %}
+<link rel="stylesheet" href="/static/css/titles.css">
+    <div id="app" class="center" style="width: auto;">
+        <ul class="tiles">
+            <li v-for="p in psy_data">
+                <div class="tile tile-border" style="display: inline-block;">
+                    <img src="/static/img/1.png">
+                    <p style="display: table; margin: 4px auto 0px;">${p.credibility}% | ${getLastElement(p)}</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <script>
+        var app = new Vue({
+            el: '#app',
+            delimiters: ["${", "}"],
+            data: {
+                psy_data: {{psy_data | safe}},
+                message: 'Привет, Vue!'
+            },
+            methods:{
+                getLastElement: function(mass){
+                    return mass[mass.length-1] || 0
+                }
+            }
+        })
+    </script>
+    <script src="/static/js/game.js"></script>
+{% include "footer.html" %} 
