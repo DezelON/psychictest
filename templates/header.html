@@ -4,5 +4,10 @@
         <link rel="stylesheet" href="/static/css/app.css">
         <script src="https://cdn.jsdelivr.net/npm/vue"></script>
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script>
+            Array.prototype.last = function() {
+                return this[this.length-1] || 0
+            }
+        </script>
     </head>
     <body>

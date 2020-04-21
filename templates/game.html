@@ -1,30 +1,96 @@
 {% load static %}
 {% include "header.html" %}
 <link rel="stylesheet" href="/static/css/titles.css">
+<link rel="stylesheet" href="/static/css/label.css">
     <div id="app" class="center" style="width: auto;">
+        <div class="slogan" style="padding-bottom: 10px; text-align: center;">${slogan}</div>
         <ul class="tiles">
             <li v-for="p in psy_data">
-                <div class="tile tile-border" style="display: inline-block;">
+                <div class="tile tile-border" v-bind:style="'display: inline-block; background-color:' + getColor(p)">
                     <img src="/static/img/1.png">
                     <p style="display: table; margin: 4px auto 0px;">${p.credibility}% | ${getLastElement(p)}</p>
                 </div>
             </li>
         </ul>
+        <input v-bind:disabled="input_disabled" v-bind:style="'display: ' + input_display" type="text" v-model="real_num" v-on:keyup.enter="checkNum" placeholder="Введите ваше число и нажмите Enter!">
+        <div class="button" v-bind:style="'margin: 5px auto; display: ' + button_display" v-on:click="startGame">Я загадал(-а) число</div>
     </div>
     <script>
         var app = new Vue({
             el: '#app',
             delimiters: ["${", "}"],
             data: {
-                psy_data: {{psy_data | safe}},
-                message: 'Привет, Vue!'
+                psy_data: {{psy_data | safe}}, //Ужасная вещь, но что поделать .-.,
+                num_data: {{num_data | safe}}, //Ужасная вещь, но что поделать .-.
+                slogan: "Загадайте двухзначное число!",
+                input_display: "none",
+                input_disabled: true,
+                button_display: "table",
+                real_num: "",
             },
             methods:{
+                getColor: function(mass){
+                    if(mass.status == 'win'){
+                        return 'rgb(50, 200, 50, 0.3)'
+                    }else if(mass.status == 'loss'){
+                        return 'rgb(200, 50, 50, 0.3)'
+                    }else{
+                        return 'rgb(0, 0, 0, 0.3)'
+                    }
+                },
                 getLastElement: function(mass){
-                    return mass[mass.length-1] || 0
+                    if(mass.answer_time == 0){
+                        return mass.history[mass.history.length-1] || 0
+                    }else{
+                        return 0
+                    }
+                },
+                subscribe: function(){
+                    axios.post('/game')
+                    .then(function (response) {
+                        console.log(response);
+                        if('action' in response.data){
+                            if (response.data.action == "end"){
+                                app.slogan = "Теперь введите загаданное вами число!"
+                                app.input_disabled = false
+                                return;
+                            }else if (response.data.action == "start"){
+                                app.input_disabled = true
+                                setTimeout(app.subscribe);
+                            }
+                        }else{
+                            app.psy_data = response.data
+                            setTimeout(app.subscribe, 1001);
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                        setTimeout(app.subscribe, 1000);
+                    });
+                },
+                checkNum: function(){
+                    axios.post('/game', {
+                        num: app.real_num
+                    })
+                    .then(function (response) {
+                        app.num_data.push(app.real_num)
+                        app.psy_data = response.data
+                        app.slogan = "Отлично! Теперь вы видите кто был прав, а кто нет. Если хотите продолжить, то снова загадайте число."
+                        app.button_display = "table"
+                        app.input_display = "none"
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+                },
+                startGame: function(){
+                    this.real_num = ""
+                    this.slogan = "Ожидайте, пока все экстрасенсы ответят!"
+                    this.button_display = "none"
+                    this.input_display = "block"
+                    this.subscribe()
                 }
             }
         })
     </script>
-    <script src="/static/js/game.js"></script>
 {% include "footer.html" %} 
