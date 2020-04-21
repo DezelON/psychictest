@@ -78,6 +78,18 @@ def game(request):
             request.session["psy_data"] = psy_data
             request.session["num_data"] = num_data
 
+        if request.session.get("psy_start") is not None:
+            request.session['psy_start'] = None
+        
+        psy_history_len = 0
+
+        for psy in psy_data:
+            psy_history_len = psy_history_len if len(psy['history']) <= psy_history_len else len(psy['history'])
+
+        if len(num_data) != psy_history_len:
+            num_data.append('#')
+            request.session["num_data"] = num_data
+
         data = {
             "psy_data": psy_data,
             "num_data": num_data

@@ -2,6 +2,29 @@
 {% include "header.html" %}
 <link rel="stylesheet" href="/static/css/titles.css">
 <link rel="stylesheet" href="/static/css/label.css">
+<link rel="stylesheet" href="/static/css/table.css">
+
+    <!-- component template -->
+    <script type="text/x-template" id="grid-template">
+        <table>
+            <thead>
+                <tr>
+                    <th v-for="key in columns">
+                        ${ key | capitalize }
+                        </span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="entry in filteredHeroes">
+                    <td v-for="key in columns">
+                        ${entry[key]}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+      </script>
+
     <div id="app" class="center" style="width: auto;">
         <div class="slogan" style="padding-bottom: 10px; text-align: center;">${slogan}</div>
         <ul class="tiles">
@@ -14,7 +37,14 @@
         </ul>
         <input v-bind:disabled="input_disabled" v-bind:style="'display: ' + input_display" type="text" v-model="real_num" v-on:keyup.enter="checkNum" placeholder="Введите ваше число и нажмите Enter!">
         <div class="button" v-bind:style="'margin: 5px auto; display: ' + button_display" v-on:click="startGame">Я загадал(-а) число</div>
+        <div class="button" v-bind:style="'margin: 5px auto; display: ' + button_display" onclick="historyVue.display(true)">Показать историю</div>
     </div>
+    <div id="history" class="center with_background" v-bind:style="'width: auto; display: ' + history_display">
+        <demo-grid :heroes="gridData" :columns="gridColumns">
+        </demo-grid>
+        <div class="button" style="margin: 15px auto 0px; display: table;" onclick="historyVue.display(false)">Закрыть</div>
+    </div>
+
     <script>
         var app = new Vue({
             el: '#app',
@@ -93,4 +123,96 @@
             }
         })
     </script>
+
+    <script>
+        Vue.component("demo-grid", {
+            template: "#grid-template",
+            delimiters: ["${", "}"],
+            props: {
+                heroes: Array,
+                columns: Array
+            },
+            data: function() {
+                var sortOrders = {};
+                this.columns.forEach(function(key) {
+                sortOrders[key] = 1;
+                });
+                return {
+                sortKey: "",
+                sortOrders: sortOrders
+                };
+            },
+            computed: {
+                filteredHeroes: function() {
+                var sortKey = this.sortKey;
+                var order = this.sortOrders[sortKey] || 1;
+                var heroes = this.heroes;
+                if (sortKey) {
+                    heroes = heroes.slice().sort(function(a, b) {
+                    a = a[sortKey];
+                    b = b[sortKey];
+                    return (a === b ? 0 : a > b ? 1 : -1) * order;
+                    });
+                }
+                return heroes;
+                }
+            },
+            filters: {
+                capitalize: function(str) {
+                return str.charAt(0).toUpperCase() + str.slice(1);
+                }
+            }
+            });
+
+        var historyVue = new Vue({
+            el: '#history',
+            delimiters: ["${", "}"],
+            data: {
+                history_display: 'none',
+                // gridColumns: ["name", "power"],
+                // gridData: [
+                //     { name: "Chuck Norris", power: Infinity },
+                //     { name: "Bruce Lee", power: 9000 },
+                //     { name: "Jackie Chan", power: 7000 },
+                //     { name: "Jet Li", power: 8000 }
+                // ]
+            },
+            computed:{
+                gridColumns: function(){
+                    cols = ["Я"]
+                    i = 1
+                    app.psy_data.forEach(e => {
+                        cols.push('Экстар №'+i++)
+                    });
+                    return cols
+                },
+                gridData: function(){
+                    data = []
+                    j = 0
+                    app.num_data.forEach(e => {
+                        i = 1
+                        col = {
+                            Я: e
+                        }
+                        app.psy_data.forEach(e => {
+                            col['Экстар №'+i++] = e.history[j]
+                        });
+                        j += 1
+                        data.push(col)
+                    });
+                    return data
+                }
+            },
+            methods: {
+                display: function(b){
+                    if(b){
+                        this.history_display = 'block'
+                    }else{
+                        this.history_display = 'none'
+                    }
+                }
+            }
+        })
+    </script>
+
 {% include "footer.html" %} 

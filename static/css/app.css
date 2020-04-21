@@ -52,3 +52,8 @@ a{
     background: #73bb61;
     color: #fff;
 }
+
+.with_background{
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+}
