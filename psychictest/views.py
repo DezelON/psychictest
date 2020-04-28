@@ -24,28 +24,19 @@ def index(request):
 def game(request):
 
     psy_data = request.session.get("psy_data")
-    num_data = request.session.get("num_data")
+    num_data = request.session.get("num_data", [])
 
     if request.method == "POST":
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode) if body_unicode != "" else {} #Очередной костыль
         if body.get('num') is not None:
             num = body.get('num')
-            for psy in psy_data:
-                if int(psy['history'][-1]) == int(num):
-                    psy['credibility']+=1
-                    psy['status'] = 'win'
-                else:
-                    psy['credibility']-=1
-                    psy['status'] = 'loss'
-            request.session["psy_data"] = psy_data
+            request.session["psy_data"] = api.scoring(num, psy_data)
             request.session["num_data"].append(num)
             return HttpResponse(json.dumps(psy_data))
         else:
             if request.session.get("psy_start") is None:
-                for psy in psy_data:
-                    psy['status'] = 'wait'
-                    psy["answer_time"] = random.randint(1, config.max_time_psy_wait) # маленькое читерство, по визуализации "реальных" экстрасенсов
+                psy_data = api.init_answer_time(psy_data)
                 request.session["psy_start"] = api.get_now_time()
                 return HttpResponse(json.dumps({"action": "start"}))
             else:
@@ -64,35 +55,5 @@ def game(request):
                     request.session["psy_data"] = psy_data
                     return HttpResponse(json.dumps(psy_data))
     elif request.method == "GET":
-        if psy_data is None:
-            psy_data = []
-            num_data = []
-            psy_count = random.randint(2, 6)
-            for p in range(psy_count):
-                psy_data.append({
-                    'status': 'wait',
-                    "credibility": 50,
-                    "history": [],
-                    "answer_time": 0
-                })
-            request.session["psy_data"] = psy_data
-            request.session["num_data"] = num_data
-
-        if request.session.get("psy_start") is not None:
-            request.session['psy_start'] = None
-        
-        psy_history_len = 0
-
-        for psy in psy_data:
-            psy_history_len = psy_history_len if len(psy['history']) <= psy_history_len else len(psy['history'])
-
-        if len(num_data) != psy_history_len:
-            num_data.append('#')
-            request.session["num_data"] = num_data
-
-        data = {
-            "psy_data": psy_data,
-            "num_data": num_data
-        }
-
-        return render(request, "game.html", data)
+        answer = api.get_method(request, psy_data, num_data)
+        return render(answer['request'], "game.html", answer['data'])
